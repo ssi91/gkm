@@ -2,5 +2,6 @@
 /include
 /lib
 pyvenv.cfg
+*.pyc
 
 /.idea

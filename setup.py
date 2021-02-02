@@ -1,10 +1,10 @@
 import setuptools
 
 setuptools.setup(
-    name='git_client',
+    name='git_cli',
     version='0.0.1',
     packages=(
-        'git_client',
+        'git_cli',
     ),
     scripts=('gkm.py',)
 )

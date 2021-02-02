@@ -2,7 +2,7 @@
 import os
 import sys
 
-from git_client.gkm import GitCLIClient
+from git_cli.gkm import GitCLIClient
 
 
 def _parse_argv():

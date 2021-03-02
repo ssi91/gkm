@@ -16,14 +16,50 @@ class GitCLIClient:
         os.chdir(self._current_path)
 
     def clone(self, origin_url):
-        os.chdir(self._working_path)
-        os.system("ssh-agent sh -c 'ssh-add %s; git clone %s'" % (self._ssh_key_path, origin_url))
+        result_raw = os.popen("ssh-agent sh -c 'ssh-add %s; git clone %s'" % (self._ssh_key_path, origin_url)).read()
+        success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
+        return {
+            'command': 'clone',
+            'result_raw': result_raw,
+            'success': success,
+            'result': None
+        }
+
+    def branch(self, *args):
+        c = self._build_command('branch', *args)
+        result_raw = os.popen(c).read()
+        success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
+        current_branch = None
+        split_list = result_raw.split('\n  ')
+        for b in split_list:
+            if b.startswith('* '):
+                current_branch = b.split(' ')[1]
+                break
+        result = [current_branch, ]
+        for b in split_list:
+            if "* %s" % current_branch == b:
+                continue
+            result.append(b if b[-1] != '\n' else b[:-1])
+        return {
+            'command': 'branch',
+            'result_raw': result_raw,
+            'success': success,
+            'result': result
+        }
 
     def push(self, origin_url, branch):
-        os.system("ssh-agent sh -c 'ssh-add %s; git push %s %s'" % (self._ssh_key_path, origin_url, branch))
+        # os.popen("ssh-agent sh -c 'ssh-add %s; git push %s %s'" % (self._ssh_key_path, origin_url, branch))
+        c = self._build_command('push', origin_url, branch)
+        result_raw = os.popen(c).read()
+        success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
+        return {
+            'command': 'push',
+            'result_raw': result_raw,
+            'success': success,
+            'result': None
+        }
 
     def command(self, *args):
-        print(args)
         c = self._build_command(*args)
         os.system(c)
 

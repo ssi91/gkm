@@ -10,6 +10,7 @@ class GitCLIClient:
 
     def __enter__(self):
         os.chdir(self._working_path)
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         os.chdir(self._current_path)

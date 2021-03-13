@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='git_cli',
-    version='0.1.1',
+    version='0.2.0',
     packages=(
         'git_cli',
     ),

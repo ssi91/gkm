@@ -1,4 +1,5 @@
 import os
+from subprocess import Popen, PIPE
 
 
 class GitCLIClient:
@@ -17,44 +18,55 @@ class GitCLIClient:
 
     def clone(self, origin_url):
         c = self._build_command('clone', origin_url)
-        result_raw = os.popen(c).read()
-        success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
+        p = Popen(c, shell=True, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        out = out.decode('utf-8')
+        err = err.decode('utf-8')
+        success = not (err.startswith('fatal:') or err.startswith('error:') or err.startswith('git:'))
         return {
             'command': 'clone',
-            'result_raw': result_raw,
+            'result_raw': (out, err),
             'success': success,
             'result': None
         }
 
     def branch(self, *args):
         c = self._build_command('branch', *args)
-        result_raw = os.popen(c).read()
-        success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
+        p = Popen(c, shell=True, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        out = out.decode('utf-8')
+        err = err.decode('utf-8')
+        success = not (err.startswith('fatal:') or err.startswith('error:') or err.startswith('git:'))
         current_branch = None
-        split_list = result_raw.split('\n  ')
-        for b in split_list:
-            if b.startswith('* '):
-                current_branch = b.split(' ')[1]
-                break
-        result = [current_branch, ]
-        for b in split_list:
-            if "* %s" % current_branch == b:
-                continue
-            result.append(b if b[-1] != '\n' else b[:-1])
+        result = None
+        if success:
+            split_list = out.split('\n  ')
+            for b in split_list:
+                if b.startswith('* '):
+                    current_branch = b.split(' ')[1]
+                    break
+            result = [current_branch, ]
+            for b in split_list:
+                if "* %s" % current_branch == b:
+                    continue
+                result.append(b if b[-1] != '\n' else b[:-1])
         return {
             'command': 'branch',
-            'result_raw': result_raw,
+            'result_raw': (out, err),
             'success': success,
             'result': result
         }
 
     def push(self, origin_url, branch):
         c = self._build_command('push', origin_url, branch)
-        result_raw = os.popen(c).read()
-        success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
+        p = Popen(c, shell=True, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        out = out.decode('utf-8')
+        err = err.decode('utf-8')
+        success = not (err.startswith('fatal:') or err.startswith('error:') or err.startswith('git:'))
         return {
             'command': 'push',
-            'result_raw': result_raw,
+            'result_raw': (out, err),
             'success': success,
             'result': None
         }

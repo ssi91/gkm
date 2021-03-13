@@ -16,7 +16,8 @@ class GitCLIClient:
         os.chdir(self._current_path)
 
     def clone(self, origin_url):
-        result_raw = os.popen("ssh-agent sh -c 'ssh-add %s; git clone %s'" % (self._ssh_key_path, origin_url)).read()
+        c = self._build_command('clone', origin_url)
+        result_raw = os.popen(c).read()
         success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')
         return {
             'command': 'clone',
@@ -48,7 +49,6 @@ class GitCLIClient:
         }
 
     def push(self, origin_url, branch):
-        # os.popen("ssh-agent sh -c 'ssh-add %s; git push %s %s'" % (self._ssh_key_path, origin_url, branch))
         c = self._build_command('push', origin_url, branch)
         result_raw = os.popen(c).read()
         success = result_raw.startswith('fatal:') or result_raw.startswith('error:') or result_raw.startswith('git:')

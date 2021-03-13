@@ -1,6 +1,9 @@
 /bin
 /include
 /lib
+/build
+/*.egg-info
+/dist
 pyvenv.cfg
 *.pyc
 

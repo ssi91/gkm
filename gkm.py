@@ -2,7 +2,7 @@
 import os
 import sys
 
-from git_cli.gkm import GitCLIClient
+from git_cli.gkm import GitCLIClient, GitCLIHTTPClient
 
 
 def _parse_argv():
@@ -24,5 +24,10 @@ if __name__ == '__main__':
 
     ssh_key_path = ssh_key_path or os.environ.get('GIT_SSH_KEY')
 
-    git = GitCLIClient(_ssh_key_path=ssh_key_path)
+    http_access_token = os.environ.get('GIT_HTTP_ACCESS_TOKEN')
+
+    if http_access_token is None:
+        git = GitCLIClient(_ssh_key_path=ssh_key_path)
+    else:
+        git = GitCLIHTTPClient(access_token=http_access_token)
     git.command(*git_argv)

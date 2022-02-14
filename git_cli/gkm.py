@@ -82,3 +82,26 @@ class GitCLIClient:
     def _wrap_ssh_agent(self, command):
         ssh_agent_wrap_string = "ssh-agent sh -c 'ssh-add %s; %s'" % (self._ssh_key_path, command)
         return ssh_agent_wrap_string
+
+
+class GitCLIHTTPClient(GitCLIClient):
+    def __init__(self, access_token=None, _path=os.curdir):
+        super().__init__(None, _path)
+        self._access_token = access_token
+
+    def _get_repo(self, *args):
+        repo = "https://"
+        if self._access_token is not None:
+            repo += f"{self._access_token}@"
+        args = list(args)
+        for i, p in enumerate(args):
+            if p.startswith("https://") and p.endswith(".git"):
+                repo += p[:8]
+                args[i] = p
+                break
+        return args
+
+    def _build_command(self, *args):
+        arguments = self._get_repo(*args)
+        c = 'git %s' % ' '.join(arguments)
+        return c
